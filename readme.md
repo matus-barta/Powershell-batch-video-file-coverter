@@ -1,7 +1,14 @@
-# Video File converter to Cineform
+# Powershell Video File converter
 
-Powershell script to convert supported ffmpeg files to Cineform for faster editing
+Powershell script for batch conversion for supported ffmpeg files
 
-- Usage: video-converter.ps1 <source folder> <destination folder>
+- **Usage:** video-converter.ps1 `-format` `source folder` `destination folder`
 
-Script is using 7zip module (How to install here: https://stackoverflow.com/a/61995405)
+#### Available formats
+
+- `-cineform`
+- `-hevc` - using nvenc
+
+_TODO: SW encoding and h264?, bitrate options?_
+
+Script is using 7zip module. [How to install here.](https://stackoverflow.com/a/61995405)

@@ -2,13 +2,15 @@
 
 $ffmpeg = ".\ffmpeg-git-full\bin\ffmpeg.exe"
 
-if (!($args.Count -gt 1) -and ($args.Count -lt 3)) {
+if (!($args.Count -gt 1) -and ($args.Count -lt 4)) {
     Write-Error "Incorrect amount ($($args.Count)) of arguments... closing"
     Exit 1
 }
 
-$src = $args[0]
-$dst = $args[1]
+$fmt = $args[0]
+
+$src = $args[1]
+$dst = $args[2]
 
 if (!((Test-Path $src) -and (Test-Path $dst))) {
     Write-Error "$src or $dst does not exist!"
@@ -32,18 +34,46 @@ if (!(Test-Path "ffmpeg-git-full")) {
     Remove-Item "$env:TMP\ffmpeg-git-full.7z"
 }
 
-function Invoke-FFMPEG {
+function StripExtension {
+    param (
+        $FileName
+    )
+    return $FileName.Substring(0, $_.Name.Length - 4)
+}
+
+function Invoke-FFMPEG-Cineform {
     param (
         $FileName
     )
     
-    Write-Host "Converting" $FileName
+    Write-Host "Converting $FileName to Cineform"
+
+    $NoExtension = StripExtension $FileName
 
     #info how to use cineform https://github.com/paulpacifico/shutter-encoder/blob/master/src/functions/video/CineForm.java
-    Start-Process -FilePath $ffmpeg -ArgumentList "-n -i `"$src\$FileName`" -c:v cfhd -quality film1 -pix_fmt yuv422p10 -c:a copy `"$dst\$FileName`"" -Wait
+    Start-Process -FilePath $ffmpeg -ArgumentList "-n -i `"$src\$FileName`" -c:v cfhd -quality film1 -pix_fmt yuv422p10 -c:a copy `"$dst\$NoExtension`".mov" -Wait
 }
 
+function Invoke-FFMPEG-HEVC {
+    param (
+        $FileName
+    )
+    $NoExtension = StripExtension $FileName
 
-#bin\ffmpeg.exe -i "source" -c:v dnxhd -profile:v dnxhr_hq -c:a copy "destination"
+    Write-Host "Converting $FileName to HEVC"
+    Start-Process -FilePath $ffmpeg -ArgumentList "-hwaccel cuda -n -i `"$src\$FileName`" -c:v hevc_nvenc -preset slow -b:v 2500k -c:a copy `"$dst\$NoExtension`".mp4" -Wait
+}
 
-Get-ChildItem -Path $src | Where-Object { $_ -is [System.IO.FileInfo] } | ForEach-Object { Invoke-FFMPEG $_.Name }
+#TODO: bin\ffmpeg.exe -i "source" -c:v dnxhd -profile:v dnxhr_hq -c:a copy "destination"
+
+switch ($fmt) {
+    "-cineform" { 
+        Get-ChildItem -Path $src | Where-Object { $_ -is [System.IO.FileInfo] } | ForEach-Object { Invoke-FFMPEG-Cineform $_.Name }
+    }
+    "-hevc" {
+        Get-ChildItem -Path $src | Where-Object { $_ -is [System.IO.FileInfo] } | ForEach-Object { Invoke-FFMPEG-HEVC $_.Name }
+    }
+    Default {
+        Write-Error "$fmt is unsupported format"
+    }
+}
