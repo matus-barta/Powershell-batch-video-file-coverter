@@ -51,7 +51,7 @@ function Invoke-FFMPEG-Cineform {
     $NoExtension = StripExtension $FileName
 
     #info how to use cineform https://github.com/paulpacifico/shutter-encoder/blob/master/src/functions/video/CineForm.java
-    Start-Process -FilePath $ffmpeg -ArgumentList "-n -i `"$src\$FileName`" -c:v cfhd -quality film1 -pix_fmt yuv422p10 -c:a copy `"$dst\$NoExtension`".mov" -Wait
+    Start-Process -FilePath $ffmpeg -ArgumentList "-i `"$src\$FileName`" -c:v cfhd -quality film1 -pix_fmt yuv422p10 -c:a copy `"$dst\$NoExtension`".mov" -Wait
 }
 
 function Invoke-FFMPEG-HEVC {
@@ -61,7 +61,7 @@ function Invoke-FFMPEG-HEVC {
     $NoExtension = StripExtension $FileName
 
     Write-Host "Converting $FileName to HEVC"
-    Start-Process -FilePath $ffmpeg -ArgumentList "-hwaccel cuda -n -i `"$src\$FileName`" -c:v hevc_nvenc -preset slow -b:v 2500k -c:a copy `"$dst\$NoExtension`".mp4" -Wait
+    Start-Process -FilePath $ffmpeg -ArgumentList "-hwaccel cuda -i `"$src\$FileName`" -c:v hevc_nvenc -preset slow -b:v 2500k -c:a copy `"$dst\$NoExtension`".mp4" -Wait
 }
 
 #TODO: bin\ffmpeg.exe -i "source" -c:v dnxhd -profile:v dnxhr_hq -c:a copy "destination"
