@@ -1,4 +1,4 @@
-# Video File converter
+# Video File converter to Cineform
 
 Powershell script to convert supported ffmpeg files to Cineform for faster editing
 
